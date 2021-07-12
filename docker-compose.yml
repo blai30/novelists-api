@@ -1,0 +1,54 @@
+version: '3.8'
+
+volumes:
+  novelists-api:
+  postgres-db-data:
+
+services:
+  novelists-api:
+    container_name: novelists-api
+    image: novelists-api
+    restart: always
+    volumes:
+      - novelists-api
+    env_file:
+      - .env
+    ports:
+      - 5000:5000
+      - 5001:5001
+    build:
+      context: .
+      dockerfile: src/WebApi/Dockerfile
+    # Application might continue crashing until
+    # dependent service(s) fully initialize
+    depends_on:
+      - db
+
+  db:
+    container_name: db
+    image: postgres
+    restart: always
+    volumes:
+      - postgres-db-data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - 5432:5432
+
+  flyway:
+    container_name: flyway
+    image: flyway/flyway
+    command: -url=jdbc:postgres://db -connectRetries=60 migrate
+    volumes:
+      - ./migrations:/flyway/sql
+    env_file:
+      - .env
+    environment:
+      FLYWAY_EDITION: ${FLYWAY_EDITION}
+      FLYWAY_USER: ${DB_USERNAME}
+      FLYWAY_PASSWORD: ${DB_PASSWORD}
+      FLYWAY_SCHEMAS: ${DB_SCHEMA}
+    depends_on:
+      - db
