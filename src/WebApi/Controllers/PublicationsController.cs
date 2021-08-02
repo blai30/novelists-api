@@ -14,10 +14,10 @@ namespace NovelistsApi.Controllers
         {
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetAsync([FromQuery] Guid id, CancellationToken cancellationToken)
+        [HttpGet]
+        public async Task<IActionResult> GetPublications(GetAll.Query query, CancellationToken cancellationToken)
         {
-            var response = await _mediator.Send(new Get.Query(id), cancellationToken);
+            var response = await _mediator.Send(query, cancellationToken);
 
             if (response is null)
             {
@@ -27,10 +27,10 @@ namespace NovelistsApi.Controllers
             return Ok(response);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAsync(GetAll.Query query, CancellationToken cancellationToken)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetPublication([FromQuery] Guid id, CancellationToken cancellationToken)
         {
-            var response = await _mediator.Send(query, cancellationToken);
+            var response = await _mediator.Send(new Get.Query(id), cancellationToken);
 
             if (response is null)
             {
