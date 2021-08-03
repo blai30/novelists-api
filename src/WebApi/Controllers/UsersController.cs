@@ -28,9 +28,49 @@ namespace NovelistsApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetUser([FromQuery] Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetUser(Guid id, CancellationToken cancellationToken)
         {
             var response = await _mediator.Send(new Get.Query(id), cancellationToken);
+
+            if (response is null)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
+        }
+
+        // TODO: Not work yet. Command currently includes id but I want to use the id from url.
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutUser(Guid id, [FromBody] Update.Command command, CancellationToken cancellationToken)
+        {
+            var response = await _mediator.Send(command, cancellationToken);
+
+            if (response is null)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> PostUser([FromBody] Create.Command command, CancellationToken cancellationToken)
+        {
+            var response = await _mediator.Send(command, cancellationToken);
+
+            if (response is null)
+            {
+                return BadRequest(response);
+            }
+
+            return CreatedAtAction(nameof(GetUser), response);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(Guid id, CancellationToken cancellationToken)
+        {
+            var response = await _mediator.Send(new Delete.Command(id), cancellationToken);
 
             if (response is null)
             {

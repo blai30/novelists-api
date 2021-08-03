@@ -28,7 +28,7 @@ namespace NovelistsApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetPublication([FromQuery] Guid id, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetPublication(Guid id, CancellationToken cancellationToken)
         {
             var response = await _mediator.Send(new Get.Query(id), cancellationToken);
 
