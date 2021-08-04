@@ -45,7 +45,7 @@ namespace NovelistsApi
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApplication", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Novelists-Api", Version = "v1" });
                 c.CustomSchemaIds(type => type.FullName);
             });
 
@@ -65,7 +65,7 @@ namespace NovelistsApi
             app.UseHttpsRedirection();
             app.UseRouting();
 
-            // Global CORS policy to allow any origin with credentials.
+            // TODO: Global CORS policy to allow any origin with credentials.
             app.UseCors(builder => builder
                 .AllowAnyHeader()
                 .AllowAnyMethod()
