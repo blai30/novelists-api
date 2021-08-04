@@ -41,9 +41,9 @@ namespace NovelistsApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(Guid id, [FromBody] Update.Model model, CancellationToken cancellationToken)
+        public async Task<IActionResult> PutUser(Guid id, [FromBody] Update.Envelope envelope, CancellationToken cancellationToken)
         {
-            var command = new Update.Command(id, model);
+            var command = new Update.Command(id, envelope);
             var response = await _mediator.Send(command, cancellationToken);
 
             if (response is null)
@@ -64,7 +64,7 @@ namespace NovelistsApi.Controllers
                 return BadRequest(response);
             }
 
-            return CreatedAtAction(nameof(GetUser), response);
+            return CreatedAtAction(nameof(GetUser), new { response.Id }, response);
         }
 
         [HttpDelete("{id}")]

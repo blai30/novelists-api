@@ -10,9 +10,9 @@ namespace NovelistsApi.Infrastructure.Features.Users
 {
     public static class Update
     {
-        public sealed record Model(string? Email, string? Password, string? DisplayName) : IRequest<UserDto?>;
+        public sealed record Envelope(string? Email, string? Password, string? DisplayName) : IRequest<UserDto?>;
 
-        public sealed record Command(Guid Id, Model Model) : IRequest<UserDto?>;
+        public sealed record Command(Guid Id, Envelope Envelope) : IRequest<UserDto?>;
 
         public sealed class CommandHandler : IRequestHandler<Command, UserDto?>
         {
@@ -31,10 +31,9 @@ namespace NovelistsApi.Infrastructure.Features.Users
                 var entity = await context.Users
                     .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
 
-                entity.Email = request.Model.Email ?? entity.Email;
-                entity.Password = request.Model.Password ?? entity.Password;
-                entity.DisplayName = request.Model.DisplayName ?? entity.DisplayName;
-                entity.UpdatedAt = DateTime.Now;
+                entity.Email = request.Envelope.Email ?? entity.Email;
+                entity.Password = request.Envelope.Password ?? entity.Password;
+                entity.DisplayName = request.Envelope.DisplayName ?? entity.DisplayName;
 
                 await context.SaveChangesAsync(cancellationToken);
 

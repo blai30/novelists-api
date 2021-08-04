@@ -9,6 +9,7 @@ namespace NovelistsApi.Infrastructure.Maps
         public void Configure(EntityTypeBuilder<Publication> builder)
         {
             // Let database generate these values.
+            builder.Property(e => e.Id).ValueGeneratedOnAdd();
             builder.Property(e => e.CreatedAt).ValueGeneratedOnAdd();
             builder.Property(e => e.UpdatedAt).ValueGeneratedOnAddOrUpdate();
         }

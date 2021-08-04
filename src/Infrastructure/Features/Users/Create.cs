@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using MediatR;
@@ -26,20 +25,18 @@ namespace NovelistsApi.Infrastructure.Features.Users
 
             public async Task<UserDto?> Handle(Command request, CancellationToken cancellationToken)
             {
-                var dto = new UserDto
+                var entity = new User
                 {
                     Email = request.Email,
                     Password = request.Password,
-                    DisplayName = request.DisplayName,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
+                    DisplayName = request.DisplayName
                 };
 
-                var entity = _mapper.Map<User>(dto);
-
                 await using var context = _factory.CreateDbContext();
-                await context.Users.AddAsync(entity, cancellationToken);
+                var entry = await context.Users.AddAsync(entity, cancellationToken);
                 await context.SaveChangesAsync(cancellationToken);
+
+                var dto = _mapper.Map<UserDto>(entry.Entity);
 
                 return dto;
             }
