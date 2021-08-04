@@ -27,7 +27,7 @@ namespace NovelistsApi.Controllers
             return Ok(response);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetUser(Guid id, CancellationToken cancellationToken)
         {
             var response = await _mediator.Send(new Get.Query(id), cancellationToken);
@@ -40,7 +40,7 @@ namespace NovelistsApi.Controllers
             return Ok(response);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("{id:guid}")]
         public async Task<IActionResult> PutUser(Guid id, [FromBody] Update.Envelope envelope, CancellationToken cancellationToken)
         {
             var command = new Update.Command(id, envelope);
@@ -67,7 +67,7 @@ namespace NovelistsApi.Controllers
             return CreatedAtAction(nameof(GetUser), new { response.Id }, response);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteUser(Guid id, CancellationToken cancellationToken)
         {
             var response = await _mediator.Send(new Delete.Command(id), cancellationToken);
