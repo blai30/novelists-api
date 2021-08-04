@@ -10,7 +10,9 @@ namespace NovelistsApi.Infrastructure.Features.Users
 {
     public static class Update
     {
-        public sealed record Command(Guid Id, string Email, string Password, string DisplayName) : IRequest<UserDto?>;
+        public sealed record Model(string? Email, string? Password, string? DisplayName) : IRequest<UserDto?>;
+
+        public sealed record Command(Guid Id, Model Model) : IRequest<UserDto?>;
 
         public sealed class CommandHandler : IRequestHandler<Command, UserDto?>
         {
@@ -25,7 +27,20 @@ namespace NovelistsApi.Infrastructure.Features.Users
 
             public async Task<UserDto?> Handle(Command request, CancellationToken cancellationToken)
             {
-                return null;
+                await using var context = _factory.CreateDbContext();
+                var entity = await context.Users
+                    .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+
+                entity.Email = request.Model.Email ?? entity.Email;
+                entity.Password = request.Model.Password ?? entity.Password;
+                entity.DisplayName = request.Model.DisplayName ?? entity.DisplayName;
+                entity.UpdatedAt = DateTime.Now;
+
+                await context.SaveChangesAsync(cancellationToken);
+
+                var dto = _mapper.Map<UserDto>(entity);
+
+                return dto;
             }
         }
     }

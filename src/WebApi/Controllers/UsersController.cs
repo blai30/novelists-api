@@ -40,10 +40,10 @@ namespace NovelistsApi.Controllers
             return Ok(response);
         }
 
-        // TODO: Not work yet. Command currently includes id but I want to use the id from url.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(Guid id, [FromBody] Update.Command command, CancellationToken cancellationToken)
+        public async Task<IActionResult> PutUser(Guid id, [FromBody] Update.Model model, CancellationToken cancellationToken)
         {
+            var command = new Update.Command(id, model);
             var response = await _mediator.Send(command, cancellationToken);
 
             if (response is null)
