@@ -10,7 +10,7 @@ services:
     image: novelists-api
     restart: always
     volumes:
-      - novelists-api
+      - novelists-api:/novelists-api
     env_file:
       - .env
     ports:
@@ -25,7 +25,7 @@ services:
       - db
 
   db:
-    container_name: db
+    container_name: novelists-db
     image: postgres
     restart: always
     volumes:
@@ -38,9 +38,9 @@ services:
       - 5432:5432
 
   flyway:
-    container_name: flyway
+    container_name: novelists-flyway
     image: flyway/flyway
-    command: -url=jdbc:postgres://db -connectRetries=60 migrate
+    command: -url=jdbc:postgresql://novelists-db/postgres -connectRetries=60 migrate
     volumes:
       - ./migrations:/flyway/sql
     env_file:
