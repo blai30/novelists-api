@@ -15,8 +15,9 @@ namespace NovelistsApi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUsers(GetAll.Query query, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetUsers(CancellationToken cancellationToken)
         {
+            var query = new GetAll.Query();
             var response = await _mediator.Send(query, cancellationToken);
 
             if (response is null)
@@ -30,7 +31,8 @@ namespace NovelistsApi.Controllers
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetUser(Guid id, CancellationToken cancellationToken)
         {
-            var response = await _mediator.Send(new Get.Query(id), cancellationToken);
+            var query = new Get.Query(id);
+            var response = await _mediator.Send(query, cancellationToken);
 
             if (response is null)
             {
@@ -70,7 +72,8 @@ namespace NovelistsApi.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteUser(Guid id, CancellationToken cancellationToken)
         {
-            var response = await _mediator.Send(new Delete.Command(id), cancellationToken);
+            var command = new Delete.Command(id);
+            var response = await _mediator.Send(command, cancellationToken);
 
             if (response is null)
             {
