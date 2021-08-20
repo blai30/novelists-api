@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Dapper;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using NovelistsApi.Infrastructure.Persistence;
+using NovelistsApi.Domain.Models;
 
 namespace NovelistsApi.Infrastructure.Features.Users
 {
@@ -14,25 +15,35 @@ namespace NovelistsApi.Infrastructure.Features.Users
 
         public sealed class QueryHandler : IRequestHandler<Query, UserDto?>
         {
-            private readonly IDbContextFactory<NovelistsDbContext> _factory;
+            private readonly IDbConnection _connection;
             private readonly IMapper _mapper;
 
-            public QueryHandler(IDbContextFactory<NovelistsDbContext> factory, IMapper mapper)
+            public QueryHandler(IDbConnection connection, IMapper mapper)
             {
-                _factory = factory;
+                _connection = connection;
                 _mapper = mapper;
             }
 
             public async Task<UserDto?> Handle(Query request, CancellationToken cancellationToken)
             {
-                await using var context = _factory.CreateDbContext();
-                var entity = await context.Users
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+                const string sql = @"
+                    SELECT u.*
+                    FROM novelists.users AS u
+                    WHERE u.id = @Id
+                    LIMIT 1
+                    ";
 
-                var dto = _mapper.Map<UserDto>(entity);
+                var result = await _connection.QueryFirstOrDefaultAsync<User>(sql, new { request.Id });
+                var entity = _mapper.Map<UserDto>(result);
 
-                return dto;
+                // await using var context = _factory.CreateDbContext();
+                // var entity = await context.Users
+                //     .AsNoTracking()
+                //     .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+                //
+                // var dto = _mapper.Map<UserDto>(entity);
+
+                return entity;
             }
         }
     }

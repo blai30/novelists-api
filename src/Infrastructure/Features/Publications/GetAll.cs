@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Dapper;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using NovelistsApi.Infrastructure.Persistence;
+using NovelistsApi.Domain.Models;
 
 namespace NovelistsApi.Infrastructure.Features.Publications
 {
@@ -14,24 +15,40 @@ namespace NovelistsApi.Infrastructure.Features.Publications
 
         public sealed class QueryHandler : IRequestHandler<Query, IEnumerable<PublicationDto>?>
         {
-            private readonly IDbContextFactory<NovelistsDbContext> _factory;
+            private readonly IDbConnection _connection;
             private readonly IMapper _mapper;
 
-            public QueryHandler(IDbContextFactory<NovelistsDbContext> factory, IMapper mapper)
+            public QueryHandler(IDbConnection connection, IMapper mapper)
             {
-                _factory = factory;
+                _connection = connection;
                 _mapper = mapper;
             }
 
             public async Task<IEnumerable<PublicationDto>?> Handle(Query request, CancellationToken cancellationToken)
             {
-                await using var context = _factory.CreateDbContext();
-                var queryable = context.Publications.AsNoTracking();
-                var entities = _mapper.ProjectTo<PublicationDto>(queryable);
+                const string sql = @"
+                    SELECT p.*, u.*
+                    FROM novelists.publications AS p
+                        LEFT JOIN novelists.users AS u
+                            ON p.user_id = u.id
+                    ";
 
-                var dto = await entities.ToListAsync(cancellationToken);
+                var result = await _connection.QueryAsync<Publication, User, Publication>(sql,
+                    (publication, user) =>
+                    {
+                        publication.User = user;
+                        return publication;
+                    });
 
-                return dto;
+                var entities = _mapper.Map<IEnumerable<PublicationDto>>(result);
+
+                // await using var context = _factory.CreateDbContext();
+                // var queryable = context.Publications.AsNoTracking();
+                // var entities = _mapper.ProjectTo<PublicationDto>(queryable);
+                //
+                // var dto = await entities.ToListAsync(cancellationToken);
+
+                return entities;
             }
         }
     }
