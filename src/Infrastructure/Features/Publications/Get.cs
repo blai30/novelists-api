@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Data;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
+using Dapper;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using NovelistsApi.Infrastructure.Persistence;
+using NovelistsApi.Domain.Models;
 
 namespace NovelistsApi.Infrastructure.Features.Publications
 {
@@ -14,25 +16,44 @@ namespace NovelistsApi.Infrastructure.Features.Publications
 
         public sealed class QueryHandler : IRequestHandler<Query, PublicationDto?>
         {
-            private readonly IDbContextFactory<NovelistsDbContext> _factory;
+            private readonly IDbConnection _connection;
             private readonly IMapper _mapper;
 
-            public QueryHandler(IDbContextFactory<NovelistsDbContext> factory, IMapper mapper)
+            public QueryHandler(IDbConnection connection, IMapper mapper)
             {
-                _factory = factory;
+                _connection = connection;
                 _mapper = mapper;
             }
 
             public async Task<PublicationDto?> Handle(Query request, CancellationToken cancellationToken)
             {
-                await using var context = _factory.CreateDbContext();
-                var entity = await context.Publications
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+                const string sql = @"
+                    SELECT p.*, u.*
+                    FROM novelists.publications AS p
+                        LEFT JOIN novelists.users AS u
+                            ON p.user_id = u.id
+                    WHERE p.id = @PublicationId
+                    LIMIT 1
+                    ";
 
-                var dto = _mapper.Map<PublicationDto>(entity);
+                var result = await _connection.QueryAsync<Publication, User, Publication>(sql,
+                    (publication, user) =>
+                    {
+                        publication.User = user;
+                        return publication;
+                    },
+                    new { PublicationId = request.Id });
 
-                return dto;
+                var entity = _mapper.Map<PublicationDto>(result.FirstOrDefault());
+
+                // await using var context = _factory.CreateDbContext();
+                // var entity = await context.Publications
+                //     .AsNoTracking()
+                //     .FirstOrDefaultAsync(e => e.Id == request.Id, cancellationToken);
+                //
+                // var dto = _mapper.Map<PublicationDto>(entity);
+
+                return entity;
             }
         }
     }
