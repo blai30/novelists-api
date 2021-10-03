@@ -29,11 +29,11 @@ namespace NovelistsApi.Infrastructure.Features.Users
                 const string sql = @"
                     SELECT u.*
                     FROM novelists.users AS u
-                    WHERE u.id = @Id
+                    WHERE u.id = @p0
                     LIMIT 1
                     ";
 
-                var result = await _connection.QueryFirstOrDefaultAsync<User>(sql, new { request.Id });
+                var result = await _connection.QueryFirstOrDefaultAsync<User>(sql, new { p0 = request.Id });
                 var entity = _mapper.Map<UserDto>(result);
 
                 // await using var context = _factory.CreateDbContext();

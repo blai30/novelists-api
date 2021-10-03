@@ -32,7 +32,7 @@ namespace NovelistsApi.Infrastructure.Features.Publications
                     FROM novelists.publications AS p
                         LEFT JOIN novelists.users AS u
                             ON p.user_id = u.id
-                    WHERE p.id = @PublicationId
+                    WHERE p.id = @p0
                     LIMIT 1
                     ";
 
@@ -42,7 +42,7 @@ namespace NovelistsApi.Infrastructure.Features.Publications
                         publication.User = user;
                         return publication;
                     },
-                    new { PublicationId = request.Id });
+                    new { p0 = request.Id });
 
                 var entity = _mapper.Map<PublicationDto>(result.FirstOrDefault());
 
